@@ -1,0 +1,302 @@
+[
+  {
+    "id": "prod-1",
+    "name": "Sony PlayStation 5 Digital Edition (Slim)",
+    "category": "Gaming Consoles",
+    "pricePerDay": 24,
+    "deposit": 150,
+    "totalStock": 4,
+    "rating": 4.9,
+    "reviewCount": 42,
+    "image": "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=900&q=80",
+    "description": "Experience lightning-fast loading with an ultra-high speed SSD, deeper immersion with haptic feedback, adaptive triggers, and 3D Audio.",
+    "features": [
+      "2x DualSense Wireless Controllers included",
+      "1TB ultra-fast internal NVMe SSD",
+      "Includes HDMI 2.1 cable & power adapter",
+      "Preloaded with top party games"
+    ],
+    "specs": {
+      "Resolution": "Up to 4K 120Hz / 8K support",
+      "Storage": "1TB SSD",
+      "Weight": "2.6 kg",
+      "Connectivity": "Wi-Fi 6, Gigabit Ethernet, Bluetooth 5.1"
+    },
+    "isAvailable": true
+  },
+  {
+    "id": "prod-2",
+    "name": "Sony Alpha A7 IV Mirrorless Camera Body",
+    "category": "Cameras",
+    "pricePerDay": 48,
+    "deposit": 350,
+    "totalStock": 3,
+    "rating": 4.95,
+    "reviewCount": 68,
+    "image": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=80",
+    "description": "33MP full-frame Exmor R sensor with advanced AF, 4K 60p 10-bit 4:2:2 video, and 759-point phase detection. Ideal for commercial shoots, events, and cinematic video.",
+    "features": [
+      "Includes 2x NP-FZ100 batteries & dual charger",
+      "SanDisk Extreme Pro 128GB V90 SD card included",
+      "Padded peak design camera shoulder strap",
+      "Rugged weather-sealed protective carry case"
+    ],
+    "specs": {
+      "Sensor": "33MP Full-Frame Exmor R CMOS",
+      "Video": "4K 60p, 10-bit 4:2:2 All-Intra",
+      "Lens Mount": "Sony E-mount",
+      "Stabilization": "5-axis In-body Sensor-shift"
+    },
+    "isAvailable": true
+  },
+  {
+    "id": "prod-3",
+    "name": "DJI Mini 4 Pro Fly More Combo",
+    "category": "Travel Gear",
+    "pricePerDay": 36,
+    "deposit": 220,
+    "totalStock": 3,
+    "rating": 4.88,
+    "reviewCount": 35,
+    "image": "https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=900&q=80",
+    "description": "Sub-249g ultra-light folding drone with omnidirectional obstacle sensing, 4K/60fps HDR true vertical shooting, and up to 34 minutes flight time per battery.",
+    "features": [
+      "DJI RC 2 remote with built-in high-brightness screen",
+      "3x Intelligent Flight Batteries with charging hub",
+      "ND filter set (ND16/64/256) & spare propellers",
+      "Compact travel shoulder bag"
+    ],
+    "specs": {
+      "Weight": "Under 249 g (No FAA permit needed in many zones)",
+      "Range": "Up to 20 km FHD transmission",
+      "Camera": "4K/60fps HDR, 48MP Stills",
+      "Obstacle Avoidance": "Omnidirectional active sensors"
+    },
+    "isAvailable": true
+  },
+  {
+    "id": "prod-4",
+    "name": "Meta Quest 3 VR Headset (512GB)",
+    "category": "VR Equipment",
+    "pricePerDay": 32,
+    "deposit": 200,
+    "totalStock": 4,
+    "rating": 4.92,
+    "reviewCount": 51,
+    "image": "https://images.unsplash.com/photo-1622979135225-d2ba269bc1df?auto=format&fit=crop&w=900&q=80",
+    "description": "Breakthrough mixed reality headset with 4K+ Infinite Display, pancake lenses for crystal-clear optics, and full-color passthrough for gaming and spatial productivity.",
+    "features": [
+      "Includes 2x Touch Plus controllers with active straps",
+      "Elite Comfort headstrap with extra battery support",
+      "Sanitized silicone facial interface & lens protector",
+      "Fast 45W USB-C charging block and braided cable"
+    ],
+    "specs": {
+      "Display": "2064x2208 pixels per eye, 120Hz refresh",
+      "Storage": "512 GB onboard",
+      "Passthrough": "Dual RGB 18 PPD high-res cameras",
+      "Audio": "Integrated 3D spatial audio speakers"
+    },
+    "isAvailable": true
+  },
+  {
+    "id": "prod-5",
+    "name": "Anker Nebula Capsule 3 Laser 1080p Projector",
+    "category": "Projectors",
+    "pricePerDay": 26,
+    "deposit": 180,
+    "totalStock": 3,
+    "rating": 4.85,
+    "reviewCount": 29,
+    "image": "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=900&q=80",
+    "description": "Soda-can sized laser projector packing 300 ANSI lumens, native 1080p crisp laser clarity, Android TV 11.0, and 2.5 hours of wire-free playtime.",
+    "features": [
+      "Autofocus & auto-keystone correction in 3 seconds",
+      "Built-in 8W Dolby Digital speaker",
+      "Compact aluminum mini-tripod included",
+      "Protective hardshell carry case & remote"
+    ],
+    "specs": {
+      "Brightness": "300 ANSI Lumens Laser Engine",
+      "Max Screen": "Up to 120 inches",
+      "Battery": "Built-in 52Wh (approx. 2.5 hours)",
+      "Inputs": "HDMI 2.0, USB-C, Bluetooth 5.0, Wi-Fi"
+    },
+    "isAvailable": true
+  },
+  {
+    "id": "prod-6",
+    "name": "Canon EOS R6 Mark II + RF 24-70mm f/2.8L",
+    "category": "Cameras",
+    "pricePerDay": 65,
+    "deposit": 450,
+    "totalStock": 2,
+    "rating": 4.97,
+    "reviewCount": 38,
+    "image": "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=900&q=80",
+    "description": "Pro-grade hybrid creator kit: 24.2MP full-frame sensor, up to 40 fps electronic shutter, 6K oversampled 4K 60p, paired with the legendary RF 24-70mm f/2.8L IS USM.",
+    "features": [
+      "Canon RF 24-70mm f/2.8L IS USM lens included",
+      "2x LP-E6NH batteries and dual USB charger",
+      "Peak Design carbon travel tripod included on request",
+      "Heavy duty Pelican storm flight case"
+    ],
+    "specs": {
+      "Sensor": "24.2MP Full-Frame Dual Pixel CMOS AF II",
+      "Continuous Shooting": "Up to 40 fps",
+      "Video": "4K 60p uncropped 6K oversampled",
+      "Lens": "24-70mm f/2.8 constant aperture"
+    },
+    "isAvailable": true
+  },
+  {
+    "id": "prod-7",
+    "name": "Nintendo Switch OLED Edition (White)",
+    "category": "Gaming Consoles",
+    "pricePerDay": 18,
+    "deposit": 120,
+    "totalStock": 5,
+    "rating": 4.89,
+    "reviewCount": 74,
+    "image": "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&w=900&q=80",
+    "description": "Vibrant 7-inch OLED screen, wide adjustable stand, dock with wired LAN port, 64 GB of internal storage, and enhanced audio for handheld or docked party gaming.",
+    "features": [
+      "4x Joy-Con controllers for 4-player multiplayer",
+      "Dock, HDMI cable, and power adapter",
+      "Carry case with 10 game cartridge slots",
+      "Preloaded with Mario Kart 8 & Super Smash Bros"
+    ],
+    "specs": {
+      "Screen": "7-inch OLED 720p handheld / 1080p docked",
+      "Storage": "64GB internal + 256GB microSD card",
+      "Battery": "4.5 to 9 hours",
+      "Weight": "Approx. 420 g with Joy-Cons"
+    },
+    "isAvailable": true
+  },
+  {
+    "id": "prod-8",
+    "name": "Osprey Farpoint 55 Travel Pack & Gear Kit",
+    "category": "Travel Gear",
+    "pricePerDay": 14,
+    "deposit": 90,
+    "totalStock": 6,
+    "rating": 4.82,
+    "reviewCount": 26,
+    "image": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=900&q=80",
+    "description": "The ultimate world-travel backpack system. Features a 40L main pack with stowable harness plus a zip-off 15L daypack for excursions and airline carry-on compatibility.",
+    "features": [
+      "Detachable 15L daypack with laptop/tablet sleeve",
+      "LightWire peripheral frame suspension",
+      "Includes set of 4 waterproof compression cubes",
+      "TSA-approved combination cable lock included"
+    ],
+    "specs": {
+      "Capacity": "55 Liters total (40L chassis + 15L daypack)",
+      "Dimensions": "55H x 35W x 23D cm",
+      "Weight": "1.92 kg",
+      "Fit": "Adjustable torso suspension (M/L)"
+    },
+    "isAvailable": true
+  },
+  {
+    "id": "prod-9",
+    "name": "Samsung The Freestyle 2nd Gen Smart Projector",
+    "category": "Projectors",
+    "pricePerDay": 30,
+    "deposit": 190,
+    "totalStock": 3,
+    "rating": 4.79,
+    "reviewCount": 31,
+    "image": "https://images.unsplash.com/photo-1595769816263-9b910be24d5f?auto=format&fit=crop&w=900&q=80",
+    "description": "180-degree dynamic cradle design allows projection onto walls, ceilings, or outdoor screens. Features Gaming Hub, 360-degree sound, and instant smart setup.",
+    "features": [
+      "Point and play 180° swivel cradle stand",
+      "Smart Calibration for any wall paint color",
+      "Includes high-capacity outdoor battery base",
+      "Water-resistant IP55 travel case included"
+    ],
+    "specs": {
+      "Resolution": "1920 x 1080 Full HD HDR10",
+      "Screen Size": "30 inches to 100 inches",
+      "Sound": "5W 360-degree omni speaker",
+      "Weight": "0.8 kg"
+    },
+    "isAvailable": true
+  },
+  {
+    "id": "prod-10",
+    "name": "PlayStation VR2 Horizon Call of the Mountain Bundle",
+    "category": "VR Equipment",
+    "pricePerDay": 34,
+    "deposit": 210,
+    "totalStock": 2,
+    "rating": 4.87,
+    "reviewCount": 27,
+    "image": "https://images.unsplash.com/photo-1592478411213-6153e4ebc07d?auto=format&fit=crop&w=900&q=80",
+    "description": "Next-generation virtual reality for PS5 with 4K HDR visuals, eye tracking, headset feedback, and revolutionary Sense controllers with adaptive triggers.",
+    "features": [
+      "Dual Sense controllers with finger touch detection",
+      "Single USB-C connection cord to PS5",
+      "Horizon Call of the Mountain demo ready",
+      "Lens cleaning kit and hard shell case"
+    ],
+    "specs": {
+      "Display": "OLED 2000 x 2040 per eye, up to 120Hz",
+      "Field of View": "Approx. 110 degrees",
+      "Sensors": "6-axis motion sensing system, IR proximity, eye tracking",
+      "Feedback": "Headset vibration motor"
+    },
+    "isAvailable": true
+  },
+  {
+    "id": "prod-11",
+    "name": "GoPro HERO 12 Black Creator Edition",
+    "category": "Cameras",
+    "pricePerDay": 25,
+    "deposit": 160,
+    "totalStock": 5,
+    "rating": 4.91,
+    "reviewCount": 59,
+    "image": "https://images.unsplash.com/photo-1564466809058-bf4114d55352?auto=format&fit=crop&w=900&q=80",
+    "description": "All-in-one vlogging powerhouse with 5.3K60 HDR video, Emmy-winning HyperSmooth 6.0 stabilization, Volta battery grip, Media Mod, and Light Mod.",
+    "features": [
+      "Volta battery grip providing over 5 hours recording",
+      "Media Mod with directional mic & 3.5mm mic port",
+      "Light Mod LED video light attachment",
+      "Sandisk Extreme 128GB MicroSD + 2x Enduro batteries"
+    ],
+    "specs": {
+      "Video": "5.3K 60fps, 4K 120fps, 2.7K 240fps (8x slo-mo)",
+      "Photo": "27MP HDR photos",
+      "Waterproofing": "10m (33ft) naked body",
+      "Audio": "Bluetooth wireless audio support (AirPods, etc.)"
+    },
+    "isAvailable": true
+  },
+  {
+    "id": "prod-12",
+    "name": "The North Face Wawona 4-Person Camping Tent",
+    "category": "Travel Gear",
+    "pricePerDay": 22,
+    "deposit": 140,
+    "totalStock": 4,
+    "rating": 4.83,
+    "reviewCount": 19,
+    "image": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=900&q=80",
+    "description": "Massive headroom and enormous front vestibule that serves as an outdoor living room. Hybrid double-wall construction and large mesh ceiling for star gazing.",
+    "features": [
+      "Huge vestibule holds chairs, bicycles, or packs",
+      "Color-coded poles and clips for 8-minute pitch",
+      "Includes ground footprint protection tarp",
+      "Duffel-style carry bag with compression straps"
+    ],
+    "specs": {
+      "Capacity": "4 Person comfortably",
+      "Peak Height": "173 cm (stand-up headroom)",
+      "Floor Area": "5.4 sq meters + 4.1 sq m vestibule",
+      "Total Weight": "5.9 kg"
+    },
+    "isAvailable": true
+  }
+]
