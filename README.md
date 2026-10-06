@@ -1,136 +1,76 @@
-\# RentEase — Rental Marketplace
+# RentEase
 
+### Full-Stack Rental Marketplace
 
+RentEase is a full-stack rental marketplace that allows users to discover rental equipment, check real-time availability, and create and manage reservations.
 
-RentEase is a full-stack rental marketplace built with Next.js, React, PostgreSQL, and Supabase.
+The application includes a customer-facing marketplace and an operations dashboard for managing rental inventory and booking lifecycles.
 
+---
 
+## 🚀 Live Demo
 
-It allows users to browse rental products, check real-time availability, create bookings, and track their reservations. It also includes an operations dashboard for managing rental inventory and booking lifecycles.
+**Live Application:** Coming soon
 
+**Repository:**  
+https://github.com/annanya111/RentEase
 
+---
 
-\## Features
+## 📌 About the Project
 
+RentEase was built to solve a common problem in rental platforms: managing inventory availability while multiple customers may request the same product for overlapping rental periods.
 
+The application handles:
 
-\- Browse rental products by category
+- Product discovery
+- Category-based browsing
+- Availability checking
+- Date-based reservations
+- Inventory validation
+- Rental price calculation
+- Booking lifecycle management
+- Customer booking lookup
+- Inventory management
+- Operations statistics
 
-\- Search and filter rental inventory
+The backend performs the availability and inventory validation rather than relying only on frontend checks.
 
-\- Product detail pages
+---
 
-\- Real-time rental availability checking
+## ✨ Key Features
 
-\- Date-based booking system
+### 🛍️ Rental Marketplace
 
-\- Inventory/stock validation
+- Browse rental equipment
+- Search products
+- Filter by category
+- Filter by price
+- Filter by availability
+- Sort products
+- View detailed product information
 
-\- Rental price calculation
+### 📅 Booking System
 
-\- Booking reference generation
+- Select rental start and end dates
+- Check real-time availability
+- Specify rental quantity
+- Calculate rental cost automatically
+- Generate unique booking references
+- Store reservations in PostgreSQL
 
-\- Booking lifecycle management
+### 📦 Inventory Management
 
-\- Customer booking lookup
+The application calculates available inventory based on existing overlapping bookings.
 
-\- Booking cancellation
-
-\- Admin operations dashboard
-
-\- Fleet/inventory management
-
-\- PostgreSQL database persistence
-
-\- REST API endpoints
-
-\- Responsive marketplace UI
-
-
-
-\## Tech Stack
-
-
-
-\### Frontend
-
-\- Next.js 14
-
-\- React
-
-\- Tailwind CSS
-
-\- JavaScript (ES6+)
-
-\- Lucide React
-
-
-
-\### Backend
-
-\- Next.js App Router
-
-\- Route Handlers
-
-\- REST APIs
-
-\- Server-side validation
-
-\- Date and inventory logic
-
-
-
-\### Database
-
-\- PostgreSQL
-
-\- Supabase
-
-\- SQL
-
-\- Indexes
-
-\- Row Level Security (RLS)
-
-
-
-\### Tools
-
-\- Git
-
-\- GitHub
-
-\- Vercel
-
-\- Postman
-
-\- VS Code
-
-\- AI-assisted development tools
-
-
-
-\## Architecture
-
-
+For example:
 
 ```text
+Total Units = 5
 
-User
+Existing bookings:
+Booking A → 2 units
+Booking B → 1 unit
 
-&#x20; ↓
-
-Next.js / React
-
-&#x20; ↓
-
-Next.js Route Handlers
-
-&#x20; ↓
-
-Business Logic
-
-&#x20; ↓
-
-Supabase PostgreSQL
-
+Available Units = 5 - 2 - 1
+                 = 2 units
