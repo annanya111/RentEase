@@ -8,6 +8,12 @@ The application includes a customer-facing marketplace and an operations dashboa
 
 ---
 
+### 🚀 Live Demo
+
+👉 **[Visit RentEase Live](https://rentease-lilac-ten.vercel.app/)**
+
+---
+
 ## 🚀 Live Demo
 
 **Live Application:** Coming soon
