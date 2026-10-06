@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Database, CheckCircle, ShieldAlert } from 'lucide-react';
 
 export default function DatabaseBadge() {
+  const pathname = usePathname();
   const [dbInfo, setDbInfo] = useState(null);
 
   useEffect(() => {
@@ -13,6 +15,7 @@ export default function DatabaseBadge() {
       .catch(() => {});
   }, []);
 
+  if (pathname === '/login') return null;
   if (!dbInfo) return null;
 
   return (

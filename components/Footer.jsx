@@ -1,8 +1,13 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ShieldCheck, RotateCcw, Clock, Award } from 'lucide-react';
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname === '/login') return null;
   return (
     <footer className="mt-20 border-t border-[#E8E4D8] bg-white">
       {/* Trust Guarantee Bar */}

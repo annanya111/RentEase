@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   Package, 
   Calendar, 
@@ -12,10 +14,16 @@ import {
   Search, 
   X, 
   RefreshCw,
-  Database
+  Database,
+  ShieldAlert,
+  ArrowRight
 } from 'lucide-react';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export default function AdminPage() {
+  const router = useRouter();
+  const { user, profile, role, loading: authLoading } = useAuth();
+
   const [activeTab, setActiveTab] = useState('bookings');
   const [stats, setStats] = useState(null);
   const [bookings, setBookings] = useState([]);
@@ -67,9 +75,81 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    fetchAdminData();
-  }, []);
+    if (!authLoading && user && role === 'admin') {
+      fetchAdminData();
+    }
+  }, [authLoading, user, role]);
 
+  // Authorization checks
+  if (authLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center text-xs text-[#77736A]">
+        Verifying administrator credentials...
+      </div>
+    );
+  }
+
+  // 1. Unauthenticated -> Prompt / Redirect to Login
+  if (!user) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center space-y-4">
+        <div className="w-12 h-12 rounded-xl bg-red-50 border border-red-200 text-red-700 mx-auto flex items-center justify-center font-bold">
+          <ShieldAlert className="w-6 h-6" />
+        </div>
+        <h2 className="text-xl font-bold text-[#292824]">Admin Authentication Required</h2>
+        <p className="text-xs text-[#77736A]">
+          The platform operations panel is restricted to verified administrators. Please log in with an administrator account.
+        </p>
+        <Link
+          href="/login?redirect=/admin"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#F6E58D] text-xs font-bold text-[#292824] border border-[#E8E4D8] shadow-subtle"
+        >
+          <span>Log In as Admin</span>
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
+    );
+  }
+
+  // 2. Authenticated but NOT admin -> HTTP 403 Forbidden UI
+  if (role !== 'admin') {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center space-y-4">
+        <div className="w-12 h-12 rounded-xl bg-red-50 border border-red-200 text-red-700 mx-auto flex items-center justify-center font-bold">
+          <ShieldAlert className="w-6 h-6" />
+        </div>
+        <h2 className="text-xl font-bold text-[#292824]">403 Forbidden: Access Denied</h2>
+        <p className="text-xs text-[#77736A] leading-relaxed">
+          Your current account role is <strong className="text-[#292824] uppercase">{role}</strong>. Only users with the <strong className="text-[#292824]">admin</strong> role have access to platform analytics, global fleet management, and operational dispatch.
+        </p>
+        <div className="flex gap-2 justify-center pt-2">
+          {role === 'seller' ? (
+            <Link
+              href="/seller"
+              className="px-4 py-2 rounded-lg bg-[#F6E58D] text-xs font-bold text-[#292824] border border-[#E8E4D8]"
+            >
+              Go to Seller Dashboard
+            </Link>
+          ) : (
+            <Link
+              href="/my-bookings"
+              className="px-4 py-2 rounded-lg bg-[#F6E58D] text-xs font-bold text-[#292824] border border-[#E8E4D8]"
+            >
+              Go to My Bookings
+            </Link>
+          )}
+          <Link
+            href="/"
+            className="px-4 py-2 rounded-lg bg-white text-xs font-semibold text-[#292824] border border-[#E8E4D8]"
+          >
+            Return to Marketplace
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. User is Admin: Full access
   const handleUpdateStatus = async (bookingId, newStatus) => {
     try {
       const res = await fetch(`/api/bookings/${bookingId}/status`, {
@@ -176,14 +256,14 @@ export default function AdminPage() {
       {/* Admin Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-[#FFF4B8] border border-[#E8E4D8] text-xs font-semibold text-[#292824] mb-2">
-            Operations & Fleet Control
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-amber-100 border border-amber-300 text-amber-900 text-xs font-semibold mb-2">
+            Platform Operator • Master Admin
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-[#292824]">
             RentEase Admin Dashboard
           </h1>
           <p className="text-sm text-[#77736A] mt-1">
-            Manage dispatch statuses, track returns, inspect security deposits, and maintain gear inventory.
+            Global fleet management, revenue analytics, and customer reservation control.
           </p>
         </div>
         <button
@@ -195,7 +275,7 @@ export default function AdminPage() {
         </button>
       </div>
 
-      {/* Database Connection Notice */}
+      {/* Database Status Notice */}
       {stats && (
         <div className="bg-white rounded-xl border border-[#E8E4D8] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-subtle">
           <div className="flex items-center gap-2.5">
@@ -204,19 +284,13 @@ export default function AdminPage() {
             </div>
             <div>
               <div className="text-xs font-bold text-[#292824] flex items-center gap-2">
-                <span>Active Database Backend:</span>
-                <span className={`px-2 py-0.5 rounded text-[11px] font-semibold border ${
-                  stats.isSupabaseConnected 
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
-                    : 'bg-[#FFF4B8] text-[#292824] border-[#E8E4D8]'
-                }`}>
+                <span>Database Engine:</span>
+                <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
                   {stats.databaseType}
                 </span>
               </div>
               <p className="text-[11px] text-[#77736A] mt-0.5">
-                {stats.isSupabaseConnected 
-                  ? 'All reads and writes are synchronized with live PostgreSQL tables.' 
-                  : 'Add your Supabase credentials to .env.local to link cloud PostgreSQL directly. Schema is in supabase/schema.sql.'}
+                All records are stored in PostgreSQL on Supabase with Row Level Security.
               </p>
             </div>
           </div>
@@ -274,7 +348,7 @@ export default function AdminPage() {
               {stats.totalUnits} <span className="text-sm font-normal text-[#77736A]">({stats.totalProducts} models)</span>
             </div>
             <span className="text-[11px] text-[#77736A] mt-1 block">
-              Across 5 primary categories
+              Across all rental categories
             </span>
           </div>
         </div>
@@ -290,7 +364,7 @@ export default function AdminPage() {
               : 'border-transparent text-[#77736A] hover:text-[#292824]'
           }`}
         >
-          Bookings Management ({bookings.length})
+          Global Bookings ({bookings.length})
         </button>
         <button
           onClick={() => setActiveTab('inventory')}
@@ -300,14 +374,13 @@ export default function AdminPage() {
               : 'border-transparent text-[#77736A] hover:text-[#292824]'
           }`}
         >
-          Fleet Inventory ({products.length})
+          Global Fleet ({products.length})
         </button>
       </div>
 
-      {/* TAB 1: BOOKINGS MANAGEMENT */}
+      {/* TAB 1: BOOKINGS */}
       {activeTab === 'bookings' && (
         <div className="space-y-6">
-          
           <div className="bg-white rounded-2xl border border-[#E8E4D8] p-4 shadow-card grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
             <div className="md:col-span-6 relative">
               <Search className="w-4 h-4 text-[#77736A] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -343,8 +416,8 @@ export default function AdminPage() {
                 <thead className="bg-[#FAF9F4] border-b border-[#E8E4D8] text-[#77736A] uppercase font-semibold">
                   <tr>
                     <th className="px-5 py-3.5">Reference & Item</th>
-                    <th className="px-5 py-3.5">Customer</th>
-                    <th className="px-5 py-3.5">Rental Dates</th>
+                    <th className="px-5 py-3.5">Customer & User ID</th>
+                    <th className="px-5 py-3.5">Dates</th>
                     <th className="px-5 py-3.5">Amount / Deposit</th>
                     <th className="px-5 py-3.5">Status</th>
                     <th className="px-5 py-3.5 text-right">Action Status</th>
@@ -361,7 +434,9 @@ export default function AdminPage() {
                       <td className="px-5 py-4">
                         <div className="font-semibold text-[#292824]">{b.customer?.name}</div>
                         <div className="text-[11px] text-[#77736A]">{b.customer?.email}</div>
-                        <div className="text-[11px] text-[#77736A]">{b.customer?.phone}</div>
+                        {b.customerId && (
+                          <div className="font-mono text-[10px] text-gray-400 truncate max-w-[150px]">UID: {b.customerId}</div>
+                        )}
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap">
                         <div className="font-medium text-[#292824]">{b.startDate} → {b.endDate}</div>
@@ -385,7 +460,7 @@ export default function AdminPage() {
                         <select
                           value={b.status}
                           onChange={(e) => handleUpdateStatus(b.id, e.target.value)}
-                          className="px-2.5 py-1.5 bg-[#FAF9F4] border border-[#E8E4D8] rounded-lg text-xs font-medium text-[#292824] focus:outline-none focus:ring-1 focus:ring-[#F6E58D]"
+                          className="px-2.5 py-1.5 bg-[#FAF9F4] border border-[#E8E4D8] rounded-lg text-xs font-medium text-[#292824]"
                         >
                           <option value="Confirmed">Confirmed</option>
                           <option value="Active / Picked Up">Active / Picked Up</option>
@@ -409,19 +484,19 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* TAB 2: FLEET INVENTORY MANAGEMENT */}
+      {/* TAB 2: INVENTORY */}
       {activeTab === 'inventory' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-[#292824]">
-              Rental Fleet Catalog
+              Global Equipment Inventory
             </h2>
             <button
               onClick={handleOpenCreateProduct}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#F6E58D] hover:bg-[#EED977] text-[#292824] text-xs font-bold border border-[#E8E4D8] shadow-subtle transition-colors"
             >
               <Plus className="w-4 h-4" />
-              <span>Add New Equipment</span>
+              <span>Add Fleet Equipment</span>
             </button>
           </div>
 
@@ -451,6 +526,9 @@ export default function AdminPage() {
                           <div>
                             <div className="font-semibold text-[#292824]">{p.name}</div>
                             <div className="text-[11px] text-[#77736A] line-clamp-1">{p.description}</div>
+                            {p.ownerId && (
+                              <span className="text-[10px] text-emerald-800 font-medium">Seller item (UID: {p.ownerId.slice(0, 8)}...)</span>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -465,21 +543,21 @@ export default function AdminPage() {
                       <td className="px-5 py-4 text-[#77736A]">
                         ${p.deposit}
                       </td>
-                      <td className="px-5 py-4">
-                        <span className="font-semibold text-[#292824]">{p.totalStock} units</span>
+                      <td className="px-5 py-4 font-semibold text-[#292824]">
+                        {p.totalStock} units
                       </td>
                       <td className="px-5 py-4 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => handleOpenEditProduct(p)}
-                            className="p-1.5 rounded-lg bg-white border border-[#E8E4D8] hover:bg-[#FAF9F4] text-[#292824] shadow-subtle"
+                            className="p-1.5 rounded-lg bg-white border border-[#E8E4D8] hover:bg-[#FAF9F4] text-[#292824]"
                             title="Edit"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteProduct(p.id)}
-                            className="p-1.5 rounded-lg bg-white border border-red-200 hover:bg-red-50 text-red-600 shadow-subtle"
+                            className="p-1.5 rounded-lg bg-white border border-red-200 hover:bg-red-50 text-red-600"
                             title="Delete"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -495,7 +573,7 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* Add / Edit Product Modal */}
+      {/* Add / Edit Modal */}
       {isProductModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl border border-[#E8E4D8] max-w-lg w-full p-6 shadow-2xl space-y-4">
@@ -527,7 +605,7 @@ export default function AdminPage() {
                   <select
                     value={productForm.category}
                     onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
-                    className="w-full p-2.5 bg-[#FAF9F4] border border-[#E8E4D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F6E58D]"
+                    className="w-full p-2.5 bg-[#FAF9F4] border border-[#E8E4D8] rounded-lg"
                   >
                     {categories.map((c) => (
                       <option key={c} value={c}>{c}</option>
@@ -542,7 +620,7 @@ export default function AdminPage() {
                     required
                     value={productForm.totalStock}
                     onChange={(e) => setProductForm({ ...productForm, totalStock: Number(e.target.value) })}
-                    className="w-full p-2.5 bg-[#FAF9F4] border border-[#E8E4D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F6E58D]"
+                    className="w-full p-2.5 bg-[#FAF9F4] border border-[#E8E4D8] rounded-lg"
                   />
                 </div>
               </div>
@@ -556,7 +634,7 @@ export default function AdminPage() {
                     required
                     value={productForm.pricePerDay}
                     onChange={(e) => setProductForm({ ...productForm, pricePerDay: Number(e.target.value) })}
-                    className="w-full p-2.5 bg-[#FAF9F4] border border-[#E8E4D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F6E58D]"
+                    className="w-full p-2.5 bg-[#FAF9F4] border border-[#E8E4D8] rounded-lg"
                   />
                 </div>
                 <div>
@@ -567,7 +645,7 @@ export default function AdminPage() {
                     placeholder="Defaults to 5x daily price"
                     value={productForm.deposit}
                     onChange={(e) => setProductForm({ ...productForm, deposit: Number(e.target.value) })}
-                    className="w-full p-2.5 bg-[#FAF9F4] border border-[#E8E4D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F6E58D]"
+                    className="w-full p-2.5 bg-[#FAF9F4] border border-[#E8E4D8] rounded-lg"
                   />
                 </div>
               </div>
@@ -579,7 +657,7 @@ export default function AdminPage() {
                   placeholder="https://images.unsplash.com/..."
                   value={productForm.image}
                   onChange={(e) => setProductForm({ ...productForm, image: e.target.value })}
-                  className="w-full p-2.5 bg-[#FAF9F4] border border-[#E8E4D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F6E58D]"
+                  className="w-full p-2.5 bg-[#FAF9F4] border border-[#E8E4D8] rounded-lg"
                 />
               </div>
 
@@ -590,7 +668,7 @@ export default function AdminPage() {
                   placeholder="Features, accessories, power brick, travel case..."
                   value={productForm.description}
                   onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
-                  className="w-full p-2.5 bg-[#FAF9F4] border border-[#E8E4D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F6E58D]"
+                  className="w-full p-2.5 bg-[#FAF9F4] border border-[#E8E4D8] rounded-lg"
                 ></textarea>
               </div>
 

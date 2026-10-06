@@ -2,10 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { X, Calendar, ShieldCheck, Check, AlertCircle, Clock, Truck, MapPin, ArrowRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { X, Calendar, ShieldCheck, Check, AlertCircle, Clock, Truck, MapPin, ArrowRight, LogIn, Lock } from 'lucide-react';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export default function BookingModal({ product, onClose, onBookingSuccess }) {
   if (!product) return null;
+
+  const router = useRouter();
+  const { user, profile, loading: authLoading } = useAuth();
 
   const getTomorrowDateStr = (addDays = 1) => {
     const d = new Date();
@@ -19,9 +24,8 @@ export default function BookingModal({ product, onClose, onBookingSuccess }) {
   const [endDate, setEndDate] = useState(getTomorrowDateStr(4));
   const [deliveryMethod, setDeliveryMethod] = useState('Doorstep Delivery');
   
-  // Customer details
-  const [customerName, setCustomerName] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
+  // Customer details - initialized from authenticated user
+  const [customerName, setCustomerName] = useState(profile?.name || '');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
   const [notes, setNotes] = useState('');
@@ -32,6 +36,12 @@ export default function BookingModal({ product, onClose, onBookingSuccess }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+
+  useEffect(() => {
+    if (profile?.name && !customerName) {
+      setCustomerName(profile.name);
+    }
+  }, [profile]);
 
   const computeDays = (start, end) => {
     if (!start || !end) return 1;
@@ -97,8 +107,14 @@ export default function BookingModal({ product, onClose, onBookingSuccess }) {
     e.preventDefault();
     setErrorMessage('');
 
-    if (!customerName.trim() || !customerEmail.trim()) {
-      setErrorMessage('Please provide your name and email address.');
+    // If user is not logged in, prevent submission and prompt login
+    if (!user) {
+      setErrorMessage('You must be logged in to confirm a reservation.');
+      return;
+    }
+
+    if (!customerName.trim()) {
+      setErrorMessage('Please provide your full name for the rental agreement.');
       return;
     }
 
@@ -121,7 +137,7 @@ export default function BookingModal({ product, onClose, onBookingSuccess }) {
           notes,
           customer: {
             name: customerName,
-            email: customerEmail,
+            email: user.email,
             phone: customerPhone,
             address: customerAddress || (deliveryMethod === 'Store Pickup' ? 'Store Pickup' : 'Standard Address'),
           },
@@ -152,11 +168,13 @@ export default function BookingModal({ product, onClose, onBookingSuccess }) {
         <div className="px-6 py-4 border-b border-[#E8E4D8] flex items-center justify-between bg-[#FAF9F4]">
           <div>
             <h2 className="text-lg font-bold text-[#292824]">
-              {confirmedBooking ? 'Reservation Confirmed' : 'Book Rental Equipment'}
+              {confirmedBooking ? 'Reservation Confirmed' : !user ? 'Authentication Required' : 'Book Rental Equipment'}
             </h2>
             <p className="text-xs text-[#77736A]">
               {confirmedBooking 
                 ? 'Your rental contract is generated in PostgreSQL / Supabase.' 
+                : !user
+                ? 'Sign in to lock in your reservation and protect security deposits.'
                 : 'Zero hidden fees • Free cancellation up to 24h before rental'}
             </p>
           </div>
@@ -232,8 +250,56 @@ export default function BookingModal({ product, onClose, onBookingSuccess }) {
               </Link>
             </div>
           </div>
+        ) : !authLoading && !user ? (
+          /* Modal Body: Unauthenticated Login Gate */
+          <div className="p-6 sm:p-8 space-y-6">
+            <div className="flex items-center gap-4 p-4 bg-[#FAF9F4] rounded-2xl border border-[#E8E4D8]">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-16 h-16 rounded-xl object-cover border border-[#E8E4D8]"
+              />
+              <div>
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-white text-[#77736A] border border-[#E8E4D8]">
+                  {product.category}
+                </span>
+                <h4 className="font-bold text-sm text-[#292824] mt-1">{product.name}</h4>
+                <div className="text-xs text-[#77736A] font-medium mt-0.5">
+                  ${product.pricePerDay} / day • ${product.deposit} deposit
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-5 text-center space-y-3">
+              <div className="w-10 h-10 rounded-full bg-[#FFF4B8] border border-[#E8E4D8] text-[#292824] mx-auto flex items-center justify-center font-bold">
+                <Lock className="w-5 h-5" />
+              </div>
+              <h3 className="text-base font-bold text-[#292824]">
+                Please Sign In to Reserve this Equipment
+              </h3>
+              <p className="text-xs text-[#77736A] max-w-sm mx-auto leading-relaxed">
+                RentEase connects rental agreements and refundable security deposits directly to your customer account.
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <Link
+                href={`/login?redirect=/products/${product.id}`}
+                className="w-full py-3 px-4 rounded-xl bg-[#F6E58D] hover:bg-[#EED977] text-[#292824] font-bold text-xs border border-[#E8E4D8] shadow-subtle transition-colors flex items-center justify-center gap-2"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Log In to Rent this Gear</span>
+              </Link>
+              <Link
+                href={`/signup?redirect=/products/${product.id}`}
+                className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-[#FAF9F4] text-[#292824] font-semibold text-xs border border-[#E8E4D8] transition-colors flex items-center justify-center gap-2 text-center"
+              >
+                <span>New Customer? Create Account</span>
+              </Link>
+            </div>
+          </div>
         ) : (
-          /* Reservation Form */
+          /* Modal Body: Reservation Form (Authenticated User) */
           <form onSubmit={handleSubmitBooking} className="p-6 space-y-6">
             
             {/* Selected Product Quick Header */}
@@ -352,7 +418,7 @@ export default function BookingModal({ product, onClose, onBookingSuccess }) {
             {/* Customer Contact */}
             <div className="space-y-3">
               <label className="text-xs font-semibold text-[#292824] uppercase tracking-wider block">
-                Customer Information
+                Customer Information (Authenticated: {user?.email})
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -367,20 +433,6 @@ export default function BookingModal({ product, onClose, onBookingSuccess }) {
                   />
                 </div>
                 <div>
-                  <span className="text-xs text-[#77736A] block mb-1">Email Address *</span>
-                  <input
-                    type="email"
-                    required
-                    placeholder="e.g. maya@example.com"
-                    value={customerEmail}
-                    onChange={(e) => setCustomerEmail(e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-white border border-[#E8E4D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F6E58D]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
                   <span className="text-xs text-[#77736A] block mb-1">Phone Number</span>
                   <input
                     type="tel"
@@ -390,18 +442,19 @@ export default function BookingModal({ product, onClose, onBookingSuccess }) {
                     className="w-full px-3 py-2 text-sm bg-white border border-[#E8E4D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F6E58D]"
                   />
                 </div>
-                <div>
-                  <span className="text-xs text-[#77736A] block mb-1">
-                    {deliveryMethod === 'Doorstep Delivery' ? 'Delivery Address' : 'Pickup Note'}
-                  </span>
-                  <input
-                    type="text"
-                    placeholder={deliveryMethod === 'Doorstep Delivery' ? 'Street, Apt, City, Zip' : 'Approximate arrival time'}
-                    value={customerAddress}
-                    onChange={(e) => setCustomerAddress(e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-white border border-[#E8E4D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F6E58D]"
-                  />
-                </div>
+              </div>
+
+              <div>
+                <span className="text-xs text-[#77736A] block mb-1">
+                  {deliveryMethod === 'Doorstep Delivery' ? 'Delivery Address' : 'Pickup Note'}
+                </span>
+                <input
+                  type="text"
+                  placeholder={deliveryMethod === 'Doorstep Delivery' ? 'Street, Apt, City, Zip' : 'Approximate arrival time'}
+                  value={customerAddress}
+                  onChange={(e) => setCustomerAddress(e.target.value)}
+                  className="w-full px-3 py-2 text-sm bg-white border border-[#E8E4D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F6E58D]"
+                />
               </div>
             </div>
 

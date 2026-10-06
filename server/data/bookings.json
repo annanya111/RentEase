@@ -1,5 +1,30 @@
 [
   {
+    "id": "RE-2026-7631",
+    "productId": "prod-6",
+    "productName": "Canon EOS R6 Mark II + RF 24-70mm f/2.8L",
+    "productCategory": "Cameras",
+    "productImage": "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=900&q=80",
+    "customer": {
+      "name": "ANNANYA KUMARI TIWARI",
+      "email": "annanyatiwari2004@gmail.com",
+      "phone": "+916280297683",
+      "address": "Mankundu,712139,near station ,aura complex,flat no-261"
+    },
+    "startDate": "2026-10-07",
+    "endDate": "2026-10-10",
+    "days": 3,
+    "pricePerDay": 65,
+    "rentalSubtotal": 195,
+    "deposit": 450,
+    "serviceFee": 20,
+    "total": 665,
+    "deliveryMethod": "Doorstep Delivery",
+    "status": "Confirmed",
+    "paymentStatus": "Paid (Card)",
+    "notes": "Standard reservation."
+  },
+  {
     "id": "RE-2026-2926",
     "productId": "prod-4",
     "productName": "Meta Quest 3 VR Headset (512GB)",

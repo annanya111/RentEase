@@ -1,8 +1,18 @@
 -- ====================================================================
 -- RentEase Equipment Rental Marketplace — PostgreSQL / Supabase Schema
+-- Includes Profiles, Roles (buyer, seller, admin), Ownership, and Bookings
 -- ====================================================================
 
--- 1. Create Products Table
+-- 1. Create Profiles Table (Linked to auth.users)
+CREATE TABLE IF NOT EXISTS public.profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    name TEXT,
+    email TEXT,
+    role TEXT NOT NULL DEFAULT 'buyer' CHECK (role IN ('buyer', 'seller', 'admin')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 2. Create Products Table with owner_id
 CREATE TABLE IF NOT EXISTS public.products (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -17,16 +27,18 @@ CREATE TABLE IF NOT EXISTS public.products (
     features JSONB DEFAULT '[]'::jsonb,
     specs JSONB DEFAULT '{}'::jsonb,
     is_available BOOLEAN DEFAULT true,
+    owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 2. Create Bookings Table
+-- 3. Create Bookings Table with customer_id
 CREATE TABLE IF NOT EXISTS public.bookings (
     id TEXT PRIMARY KEY,
     product_id TEXT NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
     product_name TEXT NOT NULL,
     product_category TEXT NOT NULL,
     product_image TEXT NOT NULL,
+    customer_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     customer_name TEXT NOT NULL,
     customer_email TEXT NOT NULL,
     customer_phone TEXT,
@@ -47,40 +59,107 @@ CREATE TABLE IF NOT EXISTS public.bookings (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 3. Indexes for fast availability searches and customer lookups
+-- 4. Indexes for fast availability searches and customer lookups
 CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(category);
+CREATE INDEX IF NOT EXISTS idx_products_owner_id ON public.products(owner_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_product_dates ON public.bookings(product_id, start_date, end_date);
+CREATE INDEX IF NOT EXISTS idx_bookings_customer_id ON public.bookings(customer_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_customer_email ON public.bookings(customer_email);
 CREATE INDEX IF NOT EXISTS idx_bookings_status ON public.bookings(status);
 
--- 4. Enable Row Level Security (RLS)
+-- 5. Trigger for automatic profile creation on user signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.profiles (id, name, email, role)
+    VALUES (
+        NEW.id,
+        COALESCE(NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
+        NEW.email,
+        COALESCE(
+            CASE 
+                WHEN NEW.raw_user_meta_data->>'role' = 'seller' THEN 'seller'
+                ELSE 'buyer'
+            END,
+            'buyer'
+        )
+    )
+    ON CONFLICT (id) DO UPDATE
+    SET 
+        name = COALESCE(EXCLUDED.name, profiles.name),
+        email = COALESCE(EXCLUDED.email, profiles.email);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- 6. Enable Row Level Security (RLS)
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
 
--- 5. RLS Policies
--- Products: Read-accessible to public; Insert/Update/Delete open for service role or admin
-CREATE POLICY "Public products view" 
-    ON public.products FOR SELECT 
-    USING (true);
+-- 7. Grant Permissions to Supabase Roles
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
 
-CREATE POLICY "Public products modify" 
-    ON public.products FOR ALL 
-    USING (true);
+-- 8. RLS Policies
+-- Profiles: public can view profiles; users can update their own
+DROP POLICY IF EXISTS "Public profiles view" ON public.profiles;
+CREATE POLICY "Public profiles view" ON public.profiles FOR SELECT USING (true);
 
--- Bookings: Customers can read and create reservations
-CREATE POLICY "Public bookings view" 
-    ON public.bookings FOR SELECT 
-    USING (true);
+DROP POLICY IF EXISTS "Users update own profile" ON public.profiles;
+CREATE POLICY "Users update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
-CREATE POLICY "Public bookings insert" 
-    ON public.bookings FOR INSERT 
-    WITH CHECK (true);
+-- Products: Everyone can browse active products
+DROP POLICY IF EXISTS "Public products view" ON public.products;
+CREATE POLICY "Public products view" ON public.products FOR SELECT USING (true);
 
-CREATE POLICY "Public bookings modify" 
-    ON public.bookings FOR UPDATE 
-    USING (true);
+-- Sellers & Admins can create products
+DROP POLICY IF EXISTS "Sellers create products" ON public.products;
+CREATE POLICY "Sellers create products" ON public.products FOR INSERT 
+WITH CHECK (
+    auth.uid() IS NOT NULL AND 
+    (owner_id = auth.uid() OR auth.uid() IN (SELECT id FROM public.profiles WHERE role = 'admin'))
+);
 
--- 6. Seed Realistic Fleet Inventory
+-- Sellers can update their own products; admins can update all
+DROP POLICY IF EXISTS "Sellers update own products" ON public.products;
+CREATE POLICY "Sellers update own products" ON public.products FOR UPDATE 
+USING (
+    owner_id = auth.uid() OR 
+    auth.uid() IN (SELECT id FROM public.profiles WHERE role = 'admin')
+);
+
+-- Sellers can delete their own products; admins can delete all
+DROP POLICY IF EXISTS "Sellers delete own products" ON public.products;
+CREATE POLICY "Sellers delete own products" ON public.products FOR DELETE 
+USING (
+    owner_id = auth.uid() OR 
+    auth.uid() IN (SELECT id FROM public.profiles WHERE role = 'admin')
+);
+
+-- Bookings: Customers can view their own bookings; Sellers can view bookings for their items; Admins view all
+DROP POLICY IF EXISTS "Users view relevant bookings" ON public.bookings;
+CREATE POLICY "Users view relevant bookings" ON public.bookings FOR SELECT 
+USING (
+    customer_id = auth.uid() OR 
+    product_id IN (SELECT id FROM public.products WHERE owner_id = auth.uid()) OR
+    auth.uid() IN (SELECT id FROM public.profiles WHERE role = 'admin')
+);
+
+DROP POLICY IF EXISTS "Authenticated users create bookings" ON public.bookings;
+CREATE POLICY "Authenticated users create bookings" ON public.bookings FOR INSERT 
+WITH CHECK (
+    auth.uid() IS NOT NULL AND customer_id = auth.uid()
+);
+
+-- 9. Seed Realistic Fleet Inventory (Seeded items have owner_id NULL as platform fleet)
 INSERT INTO public.products (id, name, category, price_per_day, deposit, total_stock, rating, review_count, image, description, features, specs, is_available)
 VALUES
 ('prod-1', 'Sony PlayStation 5 Digital Edition (Slim)', 'Gaming Consoles', 24.00, 150.00, 4, 4.90, 42, 
@@ -138,14 +217,4 @@ VALUES
  '["Detachable 15L daypack with laptop/tablet sleeve", "LightWire peripheral frame suspension", "Includes set of 4 waterproof compression cubes", "TSA-approved combination cable lock included"]'::jsonb,
  '{"Capacity": "55 Liters total (40L chassis + 15L daypack)", "Dimensions": "55H x 35W x 23D cm", "Weight": "1.92 kg", "Fit": "Adjustable torso suspension (M/L)"}'::jsonb,
  true)
-ON CONFLICT (id) DO NOTHING;
-
--- 7. Seed Initial Reservations
-INSERT INTO public.bookings (id, product_id, product_name, product_category, product_image, customer_name, customer_email, customer_phone, customer_address, start_date, end_date, days, price_per_day, rental_subtotal, deposit, service_fee, total, delivery_method, status, payment_status, notes)
-VALUES
-('RE-2026-8419', 'prod-1', 'Sony PlayStation 5 Digital Edition (Slim)', 'Gaming Consoles',
- 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=900&q=80',
- 'Alex Mercer', 'alex.mercer@example.com', '+1 (555) 234-8901', '422 Willow Creek Rd, Seattle, WA',
- '2026-10-08', '2026-10-12', 4, 24.00, 96.00, 150.00, 12.00, 258.00,
- 'Doorstep Delivery', 'Confirmed', 'Paid (Card)', 'Delivering before 2 PM. Please test both DualSense controllers.')
 ON CONFLICT (id) DO NOTHING;

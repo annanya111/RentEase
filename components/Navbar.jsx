@@ -2,19 +2,47 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Package, Menu, X } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Package, Menu, X, User, LogOut, PlusCircle, Shield, ShoppingBag, LayoutDashboard } from 'lucide-react';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, profile, role, loading, logout } = useAuth();
 
-  const navItems = [
-    { href: '/', label: 'Home' },
-    { href: '/categories', label: 'Categories' },
-    { href: '/my-bookings', label: 'My Booking' },
-    { href: '/admin', label: 'Admin' },
-  ];
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+  };
+
+  const getRoleBadge = () => {
+    if (!role) return null;
+    if (role === 'admin') {
+      return (
+        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+          Admin
+        </span>
+      );
+    }
+    if (role === 'seller') {
+      return (
+        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300">
+          Seller
+        </span>
+      );
+    }
+    return (
+      <span className="text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#FFF4B8] text-[#292824] border border-[#E8E4D8]">
+        Renter
+      </span>
+    );
+  };
+
+  if (pathname === '/login') {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-40 bg-[#FAF9F4]/95 backdrop-blur-sm border-b border-[#E8E4D8]">
@@ -39,39 +67,154 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-[#E8E4D8] shadow-subtle">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-              return (
+          {/* Desktop Navigation Links based on Auth & Role */}
+          <nav className="hidden lg:flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-[#E8E4D8] shadow-subtle">
+            {/* Common: Home & Categories */}
+            <Link
+              href="/"
+              className={`px-4 py-2 text-sm font-medium rounded-full transition-all ${
+                pathname === '/'
+                  ? 'bg-[#F6E58D] text-[#292824] shadow-sm font-semibold'
+                  : 'text-[#77736A] hover:text-[#292824] hover:bg-[#FAF9F4]'
+              }`}
+            >
+              Home
+            </Link>
+
+            <Link
+              href="/categories"
+              className={`px-4 py-2 text-sm font-medium rounded-full transition-all ${
+                pathname.startsWith('/categories')
+                  ? 'bg-[#F6E58D] text-[#292824] shadow-sm font-semibold'
+                  : 'text-[#77736A] hover:text-[#292824] hover:bg-[#FAF9F4]'
+              }`}
+            >
+              Categories
+            </Link>
+
+            {/* Logged Out */}
+            {!loading && !user && (
+              <Link
+                href="/login?redirect=/seller"
+                className="px-4 py-2 text-sm font-medium text-[#77736A] hover:text-[#292824] hover:bg-[#FAF9F4] rounded-full transition-all flex items-center gap-1.5"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                <span>List Your Product</span>
+              </Link>
+            )}
+
+            {/* Buyer: My Bookings */}
+            {!loading && user && role === 'buyer' && (
+              <Link
+                href="/my-bookings"
+                className={`px-4 py-2 text-sm font-medium rounded-full transition-all ${
+                  pathname.startsWith('/my-bookings')
+                    ? 'bg-[#F6E58D] text-[#292824] shadow-sm font-semibold'
+                    : 'text-[#77736A] hover:text-[#292824] hover:bg-[#FAF9F4]'
+                }`}
+              >
+                My Bookings
+              </Link>
+            )}
+
+            {/* Seller: My Products & Seller Dashboard */}
+            {!loading && user && role === 'seller' && (
+              <>
                 <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`px-5 py-2 text-sm font-medium rounded-full transition-all duration-150 ${
-                    isActive
+                  href="/seller"
+                  className={`px-4 py-2 text-sm font-medium rounded-full transition-all ${
+                    pathname === '/seller'
                       ? 'bg-[#F6E58D] text-[#292824] shadow-sm font-semibold'
                       : 'text-[#77736A] hover:text-[#292824] hover:bg-[#FAF9F4]'
                   }`}
                 >
-                  {item.label}
+                  My Products
                 </Link>
-              );
-            })}
+                <Link
+                  href="/seller"
+                  className={`px-4 py-2 text-sm font-medium rounded-full transition-all ${
+                    pathname.startsWith('/seller')
+                      ? 'bg-[#F6E58D] text-[#292824] shadow-sm font-semibold'
+                      : 'text-[#77736A] hover:text-[#292824] hover:bg-[#FAF9F4]'
+                  }`}
+                >
+                  Seller Dashboard
+                </Link>
+              </>
+            )}
+
+            {/* Admin: Admin Panel */}
+            {!loading && user && role === 'admin' && (
+              <Link
+                href="/admin"
+                className={`px-4 py-2 text-sm font-medium rounded-full transition-all flex items-center gap-1.5 ${
+                  pathname.startsWith('/admin')
+                    ? 'bg-[#F6E58D] text-[#292824] shadow-sm font-semibold'
+                    : 'text-[#77736A] hover:text-[#292824] hover:bg-[#FAF9F4]'
+                }`}
+              >
+                <Shield className="w-3.5 h-3.5" />
+                <span>Admin</span>
+              </Link>
+            )}
+
+            {/* Authenticated Account Link */}
+            {!loading && user && (
+              <Link
+                href="/account"
+                className={`px-4 py-2 text-sm font-medium rounded-full transition-all ${
+                  pathname.startsWith('/account')
+                    ? 'bg-[#F6E58D] text-[#292824] shadow-sm font-semibold'
+                    : 'text-[#77736A] hover:text-[#292824] hover:bg-[#FAF9F4]'
+                }`}
+              >
+                Account
+              </Link>
+            )}
           </nav>
 
-          {/* Action Button & Trust Indicator */}
+          {/* Right Action Buttons */}
           <div className="hidden sm:flex items-center gap-3">
-            <Link
-              href="/categories"
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-[#F6E58D] hover:bg-[#EED977] text-[#292824] border border-[#E8E4D8] shadow-sm transition-colors"
-            >
-              <Package className="w-4 h-4" />
-              <span>Browse Catalog</span>
-            </Link>
+            {loading ? (
+              <div className="w-20 h-9 bg-gray-100 animate-pulse rounded-lg"></div>
+            ) : user ? (
+              <div className="flex items-center gap-3">
+                {getRoleBadge()}
+                <Link
+                  href="/account"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#E8E4D8] bg-white text-xs font-semibold text-[#292824] hover:bg-[#FAF9F4] transition-colors"
+                >
+                  <User className="w-3.5 h-3.5 text-[#77736A]" />
+                  <span className="max-w-[120px] truncate">{profile?.name || user.email?.split('@')[0]}</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 rounded-lg border border-[#E8E4D8] bg-white text-[#77736A] hover:text-red-700 hover:bg-red-50 transition-colors"
+                  title="Logout"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/login"
+                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-white hover:bg-[#FAF9F4] text-[#292824] border border-[#E8E4D8] transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-[#F6E58D] hover:bg-[#EED977] text-[#292824] border border-[#E8E4D8] shadow-subtle transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile hamburger */}
-          <div className="flex md:hidden items-center gap-2">
+          <div className="flex lg:hidden items-center gap-2">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-lg border border-[#E8E4D8] bg-white text-[#292824] hover:bg-[#FAF9F4] focus:outline-none"
@@ -85,33 +228,111 @@ export default function Navbar() {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-[#E8E4D8] px-4 pt-2 pb-6 space-y-2 shadow-card">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-            return (
+        <div className="lg:hidden bg-white border-b border-[#E8E4D8] px-4 pt-3 pb-6 space-y-2 shadow-card">
+          <Link
+            href="/"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-4 py-2.5 rounded-lg text-sm font-medium text-[#292824] hover:bg-[#FAF9F4]"
+          >
+            Home
+          </Link>
+          <Link
+            href="/categories"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-4 py-2.5 rounded-lg text-sm font-medium text-[#292824] hover:bg-[#FAF9F4]"
+          >
+            Categories
+          </Link>
+
+          {!user ? (
+            <>
               <Link
-                key={item.href}
-                href={item.href}
+                href="/login?redirect=/seller"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block px-4 py-3 rounded-lg text-base font-medium transition-colors ${
-                  isActive
-                    ? 'bg-[#F6E58D] text-[#292824] font-semibold'
-                    : 'text-[#77736A] hover:bg-[#FAF9F4] hover:text-[#292824]'
-                }`}
+                className="block px-4 py-2.5 rounded-lg text-sm font-medium text-[#292824] hover:bg-[#FAF9F4]"
               >
-                {item.label}
+                List Your Product
               </Link>
-            );
-          })}
-          <div className="pt-3 border-t border-[#E8E4D8]">
-            <Link
-              href="/categories"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block w-full py-3 px-4 rounded-lg bg-[#F6E58D] text-[#292824] font-medium text-center shadow-sm"
-            >
-              Browse All Equipment
-            </Link>
-          </div>
+              <div className="pt-3 border-t border-[#E8E4D8] grid grid-cols-2 gap-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="py-2.5 rounded-lg bg-white border border-[#E8E4D8] text-center text-xs font-semibold text-[#292824]"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="py-2.5 rounded-lg bg-[#F6E58D] text-center text-xs font-bold text-[#292824] border border-[#E8E4D8]"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              {role === 'buyer' && (
+                <Link
+                  href="/my-bookings"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-2.5 rounded-lg text-sm font-medium text-[#292824] hover:bg-[#FAF9F4]"
+                >
+                  My Bookings
+                </Link>
+              )}
+
+              {role === 'seller' && (
+                <>
+                  <Link
+                    href="/seller"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-4 py-2.5 rounded-lg text-sm font-medium text-[#292824] hover:bg-[#FAF9F4]"
+                  >
+                    My Products
+                  </Link>
+                  <Link
+                    href="/seller"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-4 py-2.5 rounded-lg text-sm font-medium text-[#292824] hover:bg-[#FAF9F4]"
+                  >
+                    Seller Dashboard
+                  </Link>
+                </>
+              )}
+
+              {role === 'admin' && (
+                <Link
+                  href="/admin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-2.5 rounded-lg text-sm font-semibold text-[#292824] hover:bg-[#FAF9F4]"
+                >
+                  Admin Panel
+                </Link>
+              )}
+
+              <Link
+                href="/account"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-4 py-2.5 rounded-lg text-sm font-medium text-[#292824] hover:bg-[#FAF9F4]"
+              >
+                Account Settings ({role})
+              </Link>
+
+              <div className="pt-2 border-t border-[#E8E4D8]">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </header>

@@ -2,9 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Calendar, CheckCircle2, Clock, X, FileText, ArrowRight, Printer } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Search, Calendar, CheckCircle2, Clock, X, FileText, ArrowRight, Printer, LogIn, Lock } from 'lucide-react';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export default function MyBookingsPage() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,6 +25,8 @@ export default function MyBookingsPage() {
       if (res.ok) {
         const data = await res.json();
         setBookings(data);
+      } else if (res.status === 401) {
+        setBookings([]);
       }
     } catch (err) {
       console.error('Failed to load bookings:', err);
@@ -29,8 +36,12 @@ export default function MyBookingsPage() {
   };
 
   useEffect(() => {
-    fetchBookings();
-  }, []);
+    if (!authLoading && user) {
+      fetchBookings();
+    } else if (!authLoading && !user) {
+      setLoading(false);
+    }
+  }, [authLoading, user]);
 
   const filteredBookings = bookings.filter((b) => {
     if (!searchQuery.trim()) return true;
@@ -99,6 +110,36 @@ export default function MyBookingsPage() {
     }
   };
 
+  if (authLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center text-xs text-[#77736A]">
+        Verifying customer account...
+      </div>
+    );
+  }
+
+  // Not logged in gate
+  if (!user) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center space-y-4">
+        <div className="w-12 h-12 rounded-xl bg-[#FFF4B8] border border-[#E8E4D8] text-[#292824] mx-auto flex items-center justify-center font-bold">
+          <Lock className="w-6 h-6" />
+        </div>
+        <h2 className="text-xl font-bold text-[#292824]">Customer Login Required</h2>
+        <p className="text-xs text-[#77736A] leading-relaxed">
+          Please sign in to view your equipment reservations, download rental receipts, or cancel eligible bookings.
+        </p>
+        <Link
+          href="/login?redirect=/my-bookings"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#F6E58D] text-xs font-bold text-[#292824] border border-[#E8E4D8] shadow-subtle"
+        >
+          <LogIn className="w-4 h-4" />
+          <span>Sign In to View My Bookings</span>
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
@@ -109,7 +150,7 @@ export default function MyBookingsPage() {
             My Rental Bookings
           </h1>
           <p className="text-sm text-[#77736A] mt-1">
-            Track active reservations, view equipment receipts, or manage rental extensions.
+            Track your active reservations, view equipment receipts, or manage rental extensions.
           </p>
         </div>
         <Link
@@ -121,13 +162,13 @@ export default function MyBookingsPage() {
         </Link>
       </div>
 
-      {/* Search by Reference or Email */}
+      {/* Search by Reference */}
       <div className="bg-white rounded-2xl border border-[#E8E4D8] p-4 shadow-card">
         <div className="relative">
           <Search className="w-4 h-4 text-[#77736A] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search by Booking ID (e.g. RE-2026-8419), customer name, or email..."
+            placeholder="Search by Booking ID (e.g. RE-2026-8419) or equipment title..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 text-xs bg-[#FAF9F4] border border-[#E8E4D8] rounded-xl text-[#292824] focus:outline-none focus:ring-2 focus:ring-[#F6E58D]"
@@ -265,9 +306,9 @@ export default function MyBookingsPage() {
             <Calendar className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-[#292824]">No bookings found</h3>
+            <h3 className="text-base font-bold text-[#292824]">No rental bookings found</h3>
             <p className="text-xs text-[#77736A] mt-1">
-              You haven't reserved any rental gear yet or no records match your query.
+              You haven't reserved any equipment yet. Explore our rental catalog to get started.
             </p>
           </div>
           <Link
